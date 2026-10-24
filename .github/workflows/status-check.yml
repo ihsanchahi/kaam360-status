@@ -10,6 +10,7 @@ name: Status check
 #
 # GitHub pauses scheduled workflows in a repository with no commits for 60 days; the status commits themselves keep it alive. If the
 # page says "the last check is ... hours old", open Actions > Status check and press "Run workflow".
+# If scheduled runs never start after a change here, GitHub may not have registered the schedule yet: a new commit to this file re-registers it.
 
 on:
   schedule:
