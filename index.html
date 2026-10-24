@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Kaam360 status</title>
+<meta name="description" content="Is Kaam360 up? Live checks every 5 minutes, uptime for the last 90 days, incidents and planned maintenance.">
+<link rel="icon" href="kaam360-mark.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Kaam360's public look (see landing.css in the main site), in one file so this page needs nothing from the main server. */
+:root{
+  --ink:#0f172a;--muted:#475569;--soft:#64748b;--line:#e2e8f0;--bg:#ffffff;--alt:#f8fafc;--card:#ffffff;
+  --brand:#4338ca;--brand-d:#3730a3;--brand-l:#eef2ff;--brand-m:#c7d2fe;
+  --green:#16a34a;--green-l:#dcfce7;--amber:#d97706;--amber-l:#fef3c7;--red:#dc2626;--red-l:#fee2e2;--none:#e2e8f0;
+  --radius:16px;--shadow:0 1px 2px rgba(15,23,42,.06),0 12px 32px -8px rgba(15,23,42,.18);
+}
+@media (prefers-color-scheme:dark){:root{
+  --ink:#e8ebf5;--muted:#aab2c8;--soft:#8b93ab;--line:#262c42;--bg:#0b1020;--alt:#10173a;--card:#131a33;
+  --brand:#8b8cf8;--brand-d:#a5b4fc;--brand-l:#1d2452;--brand-m:#3b3f8a;
+  --green:#4ade80;--green-l:#14321f;--amber:#fbbf24;--amber-l:#3b2a0c;--red:#f87171;--red-l:#3f1515;--none:#262c42;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px -8px rgba(0,0,0,.6);
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.55}
+a{color:var(--brand)}a:hover{color:var(--brand-d)}
+.wrap{max-width:860px;margin:0 auto;padding:0 20px}
+.skip{position:absolute;left:-9999px;top:8px;background:var(--brand);color:#fff;padding:8px 14px;border-radius:10px;z-index:9}.skip:focus{left:8px}
+header.top{border-bottom:1px solid var(--line);background:var(--bg)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;height:64px}
+.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:800;font-size:19px;letter-spacing:-.02em}
+.brand img{width:30px;height:30px;border-radius:8px}.brand b{color:var(--brand)}.brand em{font-style:normal;font-weight:500;color:var(--soft);font-size:13px;margin-left:4px;padding-left:10px;border-left:1px solid var(--line)}
+.top nav{white-space:nowrap}.top nav a{text-decoration:none;color:var(--muted);font-weight:500;font-size:14.5px;margin-left:16px}
+main{padding:36px 0 64px}
+h1{font-size:clamp(26px,4vw,36px);letter-spacing:-.03em;font-weight:800;margin:0 0 6px}
+h2{font-size:19px;margin:34px 0 12px;letter-spacing:-.01em}
+.lead{color:var(--muted);margin:0 0 22px;font-size:16px}
+.now{display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;background:var(--card);box-shadow:var(--shadow)}
+.now .dot{width:16px;height:16px;border-radius:50%;background:var(--none);flex:none}
+.now.up .dot{background:var(--green);box-shadow:0 0 0 6px var(--green-l)}
+.now.down .dot{background:var(--red);box-shadow:0 0 0 6px var(--red-l);animation:pulse 1.6s infinite}
+.now.maint .dot{background:var(--amber);box-shadow:0 0 0 6px var(--amber-l)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 6px var(--red-l)}50%{box-shadow:0 0 0 10px var(--red-l)}}
+@media (prefers-reduced-motion:reduce){.now.down .dot{animation:none}}
+.now b{display:block;font-size:19px;letter-spacing:-.01em}.now small{color:var(--muted);font-size:14px}
+.now>div:not(.actions){flex:1;min-width:0}.now .actions{margin-left:auto;flex:none}
+.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:600;font-size:14.5px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);color:var(--ink);background:var(--card);white-space:nowrap}
+.btn:hover{border-color:var(--brand-m);background:var(--brand-l);color:var(--ink)}
+.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}.btn.primary:hover{background:var(--brand-d);color:#fff}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 0}
+.tile{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--card)}
+.tile small{display:block;color:var(--soft);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.tile b{display:block;font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+.tile i{font-style:normal;color:var(--muted);font-size:13px}
+.check{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--card);margin:0 0 10px}
+.check .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.check .name{font-weight:650}
+.check .state{margin-left:auto;font-size:13.5px;font-weight:650;display:inline-flex;align-items:center;gap:6px}
+.check .state::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--none)}
+.check .state.up::before{background:var(--green)}.check .state.down::before{background:var(--red)}
+.check .pct{color:var(--muted);font-size:13.5px;font-variant-numeric:tabular-nums}
+.bars{display:flex;gap:2px;margin:10px 0 4px;height:34px;align-items:stretch}
+.bars span{flex:1;border-radius:2px;background:var(--none);min-width:2px;position:relative}
+.bars span.g{background:var(--green)}.bars span.a{background:var(--amber)}.bars span.r{background:var(--red)}
+.bars span:hover::after,.bars span:focus::after{content:attr(data-tip);position:absolute;bottom:40px;left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:8px;z-index:5;pointer-events:none}
+.legend{display:flex;justify-content:space-between;color:var(--soft);font-size:12.5px}
+.legend .key{display:inline-flex;gap:10px}.legend .key i{display:inline-flex;align-items:center;gap:4px;font-style:normal}.legend .key i::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--none)}
+.legend .key i.g::before{background:var(--green)}.legend .key i.a::before{background:var(--amber)}.legend .key i.r::before{background:var(--red)}
+.item{border:1px solid var(--line);border-left:4px solid var(--green);border-radius:14px;padding:14px 18px;margin:0 0 12px;background:var(--card)}
+.item.open{border-left-color:var(--red)}.item.plan{border-left-color:var(--amber)}
+.item header{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.item h3{margin:0;font-size:16.5px}
+.pill{font-size:12.5px;font-weight:650;padding:2px 10px;border-radius:999px;background:var(--brand-l);color:var(--brand-d)}
+.item .meta{color:var(--muted);font-size:13.5px;margin-top:2px}
+.item ol{list-style:none;margin:8px 0 0;padding:0}.item li{border-top:1px solid var(--line);padding:8px 0 2px}
+.item li b{font-size:13.5px}.item li small{color:var(--soft);margin-left:6px}.item li p{margin:2px 0 6px;font-size:14.5px;white-space:pre-wrap}
+.empty{color:var(--muted);border:1px dashed var(--line);border-radius:14px;padding:14px 18px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}th{color:var(--soft);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em}td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
+.note{background:var(--alt);border:1px solid var(--line);border-radius:14px;padding:12px 16px;color:var(--muted);font-size:14px;margin-top:28px}
+footer{border-top:1px solid var(--line);padding:22px 0;color:var(--soft);font-size:13.5px}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+footer a{color:var(--muted)}
+.stale{display:none;background:var(--amber-l);color:var(--amber);border-radius:12px;padding:10px 14px;font-size:14px;margin:0 0 14px;font-weight:500}
+.stale.on{display:block}
+@media (max-width:640px){.tiles{grid-template-columns:1fr 1fr}.now{flex-wrap:wrap}.now .actions{margin-left:0;width:100%}.now .actions .btn{width:100%;justify-content:center}.top nav a{margin-left:12px}.top nav a.alerts{display:none}.brand em{display:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="top"><div class="wrap">
+  <a class="brand" href="https://kaam360.com/" rel="noopener"><img src="kaam360-mark.svg" alt="" width="30" height="30">Kaam<b>360</b><em>Status</em></a>
+  <nav aria-label="Status page"><a href="#history">History</a><a href="#incidents">Incidents</a><a class="alerts" href="https://kaam360.com/status/subscribe" rel="noopener">Get alerts</a></nav>
+</div></header>
+
+<main id="main"><div class="wrap">
+  <h1>Kaam360 status</h1>
+  <p class="lead">An automatic check every 5 minutes from outside our network, so this page keeps working even when Kaam360 itself does not.</p>
+  <div class="stale" id="stale" role="status"></div>
+
+  <section class="now" id="now" aria-live="polite">
+    <span class="dot" aria-hidden="true"></span>
+    <div><b id="now-title">Loading the latest check…</b><small id="now-sub"></small></div>
+    <div class="actions"><a class="btn primary" href="https://kaam360.com/status/subscribe" rel="noopener">Email me when something is wrong</a></div>
+  </section>
+
+  <div class="tiles" id="tiles">
+    <div class="tile"><small>Last 24 hours</small><b id="u24">–</b><i id="u24i"></i></div>
+    <div class="tile"><small>Last 7 days</small><b id="u7">–</b><i>uptime</i></div>
+    <div class="tile"><small>Last 30 days</small><b id="u30">–</b><i>uptime</i></div>
+    <div class="tile"><small>Last 90 days</small><b id="u90">–</b><i>uptime</i></div>
+  </div>
+
+  <h2 id="history">Last 90 days</h2>
+  <div id="checks"></div>
+  <div class="legend"><span>90 days ago</span><span class="key"><i class="g">no problems</i><i class="a">partly down</i><i class="r">down</i><i>no data</i></span><span>today</span></div>
+
+  <h2 id="incidents">Incidents and maintenance</h2>
+  <div id="open"></div>
+  <div id="maintenance"></div>
+  <h2>Past incidents (last 90 days)</h2>
+  <div id="past"></div>
+
+  <h2>Uptime per month</h2>
+  <table id="months" aria-label="Uptime per month"><thead><tr><th>Month</th><th class="n">Checks</th><th class="n">Failed</th><th class="n">Uptime</th></tr></thead><tbody></tbody></table>
+
+  <p class="note">How this works: a small program hosted with GitHub asks <code>kaam360.com/health</code> (which also tests the database) and the sign-in page every 5 minutes. A check counts as down when there is no good answer within 20 seconds, twice in a row. Incidents are written by the Kaam360 team. Email alerts are sent from the main Kaam360 server, so while that server itself is down they go out once it is back.</p>
+</div></main>
+
+<footer><div class="wrap">
+  <span id="footer-when">© Kaam360</span>
+  <span><a href="https://kaam360.com/status" rel="noopener">Status on kaam360.com</a> · <a href="https://kaam360.com/security" rel="noopener">Security</a> · <a href="https://kaam360.com/help" rel="noopener">Help centre</a></span>
+</div></footer>
+
+<script>
+(async function () {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmt = iso => iso ? new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+  const fmtDay = d => new Date(d + 'T00:00:00Z').toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  const pct = p => p == null ? '–' : (p >= 99.995 ? '100' : p.toFixed(2)) + '%';
+  const words = { investigating: 'Investigating', identified: 'Cause identified', monitoring: 'Fixed, monitoring', resolved: 'Resolved', scheduled: 'Scheduled', 'in-progress': 'In progress', completed: 'Completed' };
+  const parts = { web: 'Web app', signin: 'Sign-in', api: 'API and integrations', email: 'Email sending', portal: 'Customer portal' };
+
+  let data = null;
+  try { data = await (await fetch('data/status.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { /* shown below */ }
+  if (!data || !data.summary) {
+    $('now-title').textContent = 'No checks recorded yet';
+    $('now-sub').textContent = 'The first check runs a few minutes after the status workflow is switched on.';
+    return;
+  }
+  const s = data.summary;
+  const ageMin = (Date.now() - new Date(data.updatedAt)) / 60000;
+  if (ageMin > 20) { $('stale').textContent = 'The last check is ' + Math.round(ageMin / 60 * 10) / 10 + ' hours old. The checking workflow may be paused; the figures below are from ' + fmt(data.updatedAt) + '.'; $('stale').classList.add('on'); }
+
+  // the incidents: the live feed when the site answers quickly, else the copy saved by the last check
+  let inc = data.incidents;
+  try {
+    const live = await (await fetch('https://kaam360.com/api/status/incidents', { signal: AbortSignal.timeout(5000), headers: { accept: 'application/json' } })).json();
+    if (live && Array.isArray(live.open)) inc = { fetchedAt: new Date().toISOString(), ...live };
+  } catch (e) { /* the saved copy is used */ }
+  inc = inc || { open: [], maintenance: [], past: [] };
+
+  const now = $('now');
+  const openCount = inc.open.length, inMaint = inc.maintenance.some(m => m.status === 'in-progress');
+  now.classList.add(s.state === 'down' ? 'down' : inMaint ? 'maint' : s.state === 'up' ? 'up' : 'unknown');
+  $('now-title').textContent = s.state === 'down' ? 'Kaam360 is not responding' : inMaint ? 'Planned maintenance in progress' : openCount ? 'Kaam360 is up, with a known problem' : s.state === 'up' ? 'All systems working' : 'No recent check';
+  $('now-sub').textContent = 'Last check ' + fmt(s.lastCheckAt) + (s.lastMs != null ? ' · answered in ' + s.lastMs + ' ms' : '') + (openCount ? ' · ' + openCount + ' open incident' + (openCount > 1 ? 's' : '') : '');
+
+  $('u24').textContent = pct(s.uptime.h24); $('u24i').textContent = s.downMinutes24h ? 'about ' + s.downMinutes24h + ' min down' : (s.avgMs24h != null ? 'avg ' + s.avgMs24h + ' ms' : 'uptime');
+  $('u7').textContent = pct(s.uptime.d7); $('u30').textContent = pct(s.uptime.d30); $('u90').textContent = pct(s.uptime.d90);
+
+  // one row of 90 bars per check
+  const checks = $('checks');
+  for (const c of data.checks) {
+    const pc = s.perCheck[c.key] || {};
+    const bars = s.days.map(d => {
+      const p = d.per?.[c.key];
+      const cls = p == null ? '' : p >= 99.995 ? 'g' : p >= 95 ? 'a' : 'r';
+      const tip = fmtDay(d.day) + ': ' + (p == null ? 'no data' : pct(p) + (d.f ? ' · ' + d.f + ' failed' : ''));
+      return '<span class="' + cls + '" data-tip="' + esc(tip) + '" tabindex="0" role="img" aria-label="' + esc(tip) + '"></span>';
+    }).join('');
+    checks.insertAdjacentHTML('beforeend', '<div class="check"><div class="row"><span class="name">' + esc(c.name) + '</span><span class="pct">' + pct(pc.pct90) + ' over 90 days</span><span class="state ' + (pc.ok === true ? 'up' : pc.ok === false ? 'down' : '') + '">' + (pc.ok === true ? 'Operational' : pc.ok === false ? 'Down' : 'Unknown') + '</span></div><div class="bars">' + bars + '</div></div>');
+  }
+
+  const item = (i, cls) => '<article class="item ' + cls + '"><header><h3>' + esc(i.title) + '</h3><span class="pill">' + esc(words[i.status] || i.status) + '</span></header>'
+    + '<div class="meta">Affected: ' + esc((i.affected || []).map(a => parts[a] || a).join(', ')) + ' · ' + (i.kind === 'maintenance' && i.endsAt ? fmt(i.startsAt) + ' to ' + fmt(i.endsAt) : 'since ' + fmt(i.startsAt)) + '</div>'
+    + '<ol>' + (i.updates || []).slice().reverse().map(u => '<li><b>' + esc(words[u.status] || u.status) + '</b><small>' + esc(fmt(u.at)) + '</small><p>' + esc(u.message) + '</p></li>').join('') + '</ol></article>';
+  $('open').innerHTML = inc.open.length ? inc.open.map(i => item(i, 'open')).join('') : '<div class="empty">No open incidents.</div>';
+  $('maintenance').innerHTML = inc.maintenance.map(i => item(i, 'plan')).join('');
+  $('past').innerHTML = inc.past.length ? inc.past.map(i => item(i, 'done')).join('') : '<div class="empty">No incidents in the last 90 days.</div>';
+
+  const tbody = $('months').querySelector('tbody');
+  tbody.innerHTML = s.months.slice().reverse().map(m => '<tr><td>' + esc(new Date(m.month + '-01T00:00:00Z').toLocaleDateString(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' })) + '</td><td class="n">' + m.n + '</td><td class="n">' + m.f + '</td><td class="n">' + pct(m.pct) + '</td></tr>').join('') || '<tr><td colspan="4">No data yet.</td></tr>';
+  $('footer-when').textContent = '© Kaam360 · figures as of ' + fmt(data.updatedAt) + (inc.fetchedAt ? ' · incidents as of ' + fmt(inc.fetchedAt) : '');
+})();
+</script>
+</body>
+</html>
