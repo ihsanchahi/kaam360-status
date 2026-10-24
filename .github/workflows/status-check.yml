@@ -1,0 +1,88 @@
+name: Status check
+
+# Checks whether kaam360.com is up every 5 minutes (GitHub's shortest schedule) from outside our network, and publishes the result to the
+# public status page on the gh-pages branch (GitHub Pages). The page keeps working when the server is down, because it is hosted by GitHub.
+# Set-up steps for the owner: deploy/STATUS-PAGE.txt. Nothing here touches the server.
+#
+# Each run: tools/status/check.mjs asks /health and the sign-in page, fetches the incidents the platform team posted (/api/status/incidents),
+# and adds one line to data/status.json on the gh-pages branch (the last 24 hours in detail, 90 days as daily totals). The page itself
+# (status/index.html) is copied over when it changed. One small commit per run.
+#
+# GitHub pauses scheduled workflows in a repository with no commits for 60 days; the status commits themselves keep it alive. If the
+# page says "the last check is ... hours old", open Actions > Status check and press "Run workflow".
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'The site to check'
+        required: false
+        default: 'https://kaam360.com'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: status-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Check the site and update the status page
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Get the checker and the page
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tools/status
+            status
+          sparse-checkout-cone-mode: true
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Make sure the checker's own tests pass
+        run: node --test tools/status/aggregate.test.mjs
+
+      - name: Get the status page branch (gh-pages), or start it
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          REMOTE="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads "$REMOTE" gh-pages >/dev/null 2>&1; then
+            git clone --quiet --depth 1 --branch gh-pages "$REMOTE" site
+          else
+            mkdir site && cd site && git init --quiet -b gh-pages && git remote add origin "$REMOTE"
+          fi
+
+      - name: Check the site and record the result
+        run: node tools/status/check.mjs --site site --base "${{ github.event.inputs.base || 'https://kaam360.com' }}"
+
+      - name: Copy the page itself (when it changed) and the custom domain
+        env:
+          STATUS_DOMAIN: ${{ vars.STATUS_DOMAIN }}
+        run: |
+          cp -r status/. site/
+          # The custom domain (for example status.kaam360.com) is a repository variable, so the CNAME file survives every update of the page.
+          if [ -n "$STATUS_DOMAIN" ]; then echo "$STATUS_DOMAIN" > site/CNAME; fi
+
+      - name: Publish
+        run: |
+          cd site
+          git config user.name "status-check"
+          git config user.email "status-check@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
+          git commit --quiet -m "Status check $(date -u +'%Y-%m-%d %H:%M') UTC [skip ci]"
+          # Another run may have pushed in between: take its commit first, then push ours.
+          for attempt in 1 2 3; do
+            if git push --quiet origin gh-pages; then exit 0; fi
+            git pull --quiet --rebase origin gh-pages || { git rebase --abort 2>/dev/null || true; }
+          done
+          echo "Could not push the status update after 3 attempts."; exit 1
